@@ -1,0 +1,44 @@
+subprojects {
+  repositories {
+    jcenter()
+  }
+
+  apply plugin: "java"
+
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+
+  group = "org.pf4j.demo"
+  version = "0.9.0-SNAPSHOT"
+
+  dependencies {
+    compileOnly "org.pf4j:pf4j:$pf4jVersion"
+    annotationProcessor "org.pf4j:pf4j:$pf4jVersion"
+  }
+
+  tasks.register("assemblePlugin", Copy) {
+    dependsOn(project.tasks.classes)
+    destinationDir = project.file("$buildDir/plugin")
+    into("classes") {
+      from(sourceSets.main.output.classesDirs)
+      from(sourceSets.main.output.resourcesDir)
+    }
+    into("lib") {
+      from {
+        configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.findResults { dep ->
+          return dep.file
+        }
+      }
+    }
+  }
+
+  tasks.register("packagePlugin", Zip) {
+    dependsOn('assemblePlugin')
+    archivesBaseName = "pf4j-${project.name}"
+//    archiveAppendix = 'plugin'
+    version = (project.version && project.version != 'unspecified') ? project.version : '0.0.0'
+    from("$buildDir/plugin")
+  }
+
+  project.tasks.assemble.dependsOn('packagePlugin')
+}

@@ -1,0 +1,14 @@
+rootProject.name="pf4j-demo"
+
+include "demo-api", "demo-plugin1", "demo-plugin2"
+
+def setBuildFile(project) {
+  project.buildFileName = "${project.name}.gradle"
+  project.children.each {
+    setBuildFile(it)
+  }
+}
+
+rootProject.children.each {
+  setBuildFile(it)
+}
